@@ -54,6 +54,10 @@ public class ModMIDITuning {
 	
 	// save path to tunings file
 	String jarpath = ModMIDITuning.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+	int jarpos = jarpath.indexOf("ModMIDITuning.jar");
+	if(jarpos > 0){
+	    jarpath = jarpath.substring(0,jarpos);
+	}
 	tuningfilename = new String(jarpath+"ModMIDITuning.tunings");
 	// set default directory to load or save files to the working dir
 	lastfile = System.getProperty("user.dir");
