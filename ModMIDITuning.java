@@ -41,6 +41,7 @@ public class ModMIDITuning {
     
     public static String guiusage = new String("Usage: Select the midi file to be used as input, select the tuning scheme to be used, and select the root note of the tuning method.  Then click on \"Generate and save re-tuned midi file\" to make a new midi file with the selected tuning (you will be prompted for the name of the new midi file to save).  If you wish, you can set the number of half steps your synthesizer should use as the maximum bend range, and check or uncheck the \"Send Bend Range Command\" box to select whether to write midi data to try to set the maximum bend range on the synthesizer when the midi file is played.  Most midi devices have a default bend range of 2, and you are safest leaving these options with their default values.  If you want to add additional tuning schemes, open the file \"ModMIDITuning.tunings\" in a text editor and follow the instructions in it.");
     
+    public static String tuningfilename = new String("");
     
     public static String lastfile = new String("");  // used to keep track of last file loaded or saved, so that file chooser opens in same directory
     
@@ -51,6 +52,9 @@ public class ModMIDITuning {
 	System.out.println(licensestring);
 	System.out.println();
 	
+	// save path to tunings file
+	String jarpath = ModMIDITuning.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+	tuningfilename = new String(jarpath+"ModMIDITuning.tunings");
 	// set default directory to load or save files to the working dir
 	lastfile = System.getProperty("user.dir");
 	// Make sure that a valid number of arguments were given.  If asking for help, give it.
@@ -314,7 +318,7 @@ public class ModMIDITuning {
 	ArrayList<String> tuninglist = new ArrayList<String>();
        
 	try{
-	    BufferedReader in = new BufferedReader(new FileReader("ModMIDITuning.tunings"));
+	    BufferedReader in = new BufferedReader(new FileReader(tuningfilename));
 	    String line;
 	    while((line=in.readLine()) != null) {
 		line = line.trim();
@@ -342,7 +346,7 @@ public class ModMIDITuning {
 	double pitchratios[] = {0,0,0,0,0,0,0,0,0,0,0,0};
 
 	try{
-	    BufferedReader in = new BufferedReader(new FileReader("ModMIDITuning.tunings"));
+	    BufferedReader in = new BufferedReader(new FileReader(tuningfilename));
 	    String line;
 	    while((line=in.readLine()) != null) {
 		line = line.trim();
