@@ -51,7 +51,8 @@ public class ModMIDITuning {
 	System.out.println(licensestring);
 	System.out.println();
 	
-	
+	// set default directory to load or save files to the working dir
+	lastfile = System.getProperty("user.dir");
 	// Make sure that a valid number of arguments were given.  If asking for help, give it.
 	// If there are no arguments, start up gui mode.  Otherwise do command line mode
 	if(args.length == 0){
