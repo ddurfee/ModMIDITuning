@@ -333,7 +333,7 @@ public class ModMIDITuning {
 	    }
 	    in.close();
 	} catch (IOException e) {
-	    displayerror("Problem reading tunings file");
+	    displayerror("Problem reading tunings file "+tuningfilename);
 	}
 	return(tuninglist);
     }
