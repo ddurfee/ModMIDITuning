@@ -260,6 +260,7 @@ public class ModMIDITuning {
 	jGoButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    JFileChooser fileChooser = new JFileChooser(lastfile);
+		    // suggest a new name based on loaded file and tuning selected
 		    String suggestedfilename = new String(jInfile.getText());
 		    int lastslash = suggestedfilename.lastIndexOf('/');
 		    if(lastslash >= 0){
@@ -271,7 +272,7 @@ public class ModMIDITuning {
 		    }
 		    lastslash = suggestedfilename.lastIndexOf('.');
 		    if(lastslash >=0){
-			suggestedfilename = suggestedfilename.substring(0,lastslash-1);
+			suggestedfilename = suggestedfilename.substring(0,lastslash);
 		    }		    
 		    suggestedfilename = new String(suggestedfilename+"_"+(String)jTunings.getSelectedItem()+".mid");
 		    fileChooser.setSelectedFile(new File(suggestedfilename));
