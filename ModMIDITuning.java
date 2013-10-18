@@ -38,7 +38,7 @@ public class ModMIDITuning {
     public static String description = new String("This program reads a midi file and then writes a new midi file in which each note (c, c#, d, d#, e, f, etc) or any events that affect one of these notes is put on its own channel - all of the c's and their related events on channel one, the c#'s on channel two, etc. (skipping channel 10 because it's reserved for rhythm).  At the beginning of each track in the new midi file, a pitch bend is applied to effectively \"retune\" the instrument using the selected tuning scheme.  Because of the way this software works, it does not accommodate \"stretch\" tuning or any other type of tuning in which octave intervals are not simple factor-of-two frequency ratios.  All pitch bend events in the input file are ignored (they would destroy the instrument \"retuning\"). Since notes are moved to different channels, any channel-wide events are repeated on all used channels in the new midi file.  Only the first program change encountered will be used (otherwise program changes intended for different channels will overwrite each other) - this software works best on a midi file containing just one instrument.");
     
     
-    public static String usage = new String("Usage:\n\nFor standard usage with a GUI, just run\n     java ModMIDITuning\nFor information about using the program in GUI mode, run the program and click on the \"help\" button.\n\nFor command line interface, run\n     java ModMIDITuning infile.mid outfile.mid [[Rootnote [Scheme [Maxpitchbend [WriteMaxpitchbend]]]]\nwhere Rootnote, Scheme, Maxpitchbend, and WriteMaxpitchbend are optional arguments.\n\nRootnote is the root note in the tuning scheme.  Possible values are c,c#,d,d#,e,f,f#,g,g#,a,a#, and b.  The default value is c.  Scheme is the tuning scheme to use.  Possible values are equal_temperament, pythagorean, meantone, and extended_five_limit - additional schemes can be added by opening the file \"ModMIDITuning.tunings\" in a text editor and following the instructions in the file.  The default value is pythagorean.  Maxpitchbend is the maximum number of semitones that the midi device the file will be played on can bend a note.  This is usually two (i.e. the pitch bend signal can change the pitch by as much as +/- two half steps) for a standard software synthesizer on a computer.  The default value is 2.\n\nIf WriteMaxpitchbend is true, midi events will be written to the file to attempt to set the synthesizer's pitch bend range to Maxpitchbend.  If it if false, the pitch bend range won't be adjusted, and it will be assumed that it is equal to the value of Maxpitchbend by default.  The default value is true.\n\nTo get help: \n     java ModMIDITuning -h");
+    public static String usage = new String("Usage:\n\nFor standard usage with a GUI, just run\n     java ModMIDITuning\nFor information about using the program in GUI mode, run the program and click on the \"help\" button.\n\nFor command line interface, run\n     java ModMIDITuning infile.mid outfile.mid [[Rootnote [Scheme [Maxpitchbend [WriteMaxpitchbend]]]]\nwhere Rootnote, Scheme, Maxpitchbend, and WriteMaxpitchbend are optional arguments.\n\nRootnote is the root note in the tuning scheme.  Possible values are c,c#,d,d#,e,f,f#,g,g#,a,a#, and b.  The default value is c.  Scheme is the tuning scheme to use.  Possible values are equal_temperament, pythagorean, meantone, and extended_five_limit - additional schemes can be added by opening the file \"ModMIDITuning.tunings\" in a text editor and following the instructions in the file.  The default value is pythagorean.  Maxpitchbend is the maximum number of semitones that the midi device the file will be played on can bend a note.  This is usually two (i.e. the pitch bend signal can change the pitch by as much as +/- two half steps) for a standard software synthesizer on a computer.  The default value is 2. Valid values are from 1 to 127.\n\nIf WriteMaxpitchbend is true, midi events will be written to the file to attempt to set the synthesizer's pitch bend range to Maxpitchbend.  If it if false, the pitch bend range won't be adjusted, and it will be assumed that it is equal to the value of Maxpitchbend by default.  The default value is true.\n\nTo get help: \n     java ModMIDITuning -h");
     
     public static String guiusage = new String("Usage: Select the midi file to be used as input, select the tuning scheme to be used, and select the root note of the tuning method.  Then click on \"Generate and save re-tuned midi file\" to make a new midi file with the selected tuning (you will be prompted for the name of the new midi file to save).  If you wish, you can set the number of half steps your synthesizer should use as the maximum bend range, and check or uncheck the \"Send Bend Range Command\" box to select whether to write midi data to try to set the maximum bend range on the synthesizer when the midi file is played.  Most midi devices have a default bend range of 2, and you are safest leaving these options with their default values.  If you want to add additional tuning schemes, open the file \"ModMIDITuning.tunings\" in a text editor and follow the instructions in it.");
     
@@ -81,13 +81,14 @@ public class ModMIDITuning {
 	    // set the root note that the tuning is based upon
 	    int rootnote = 0;
 	    if(args.length > 2){
+		rootnote = -1;
 		for(int i=0; i<12; i++){
 		    if(args[2].toLowerCase().contentEquals(notes[i])){
 			rootnote = i;
 			break;
 		    }
 		}
-		if(rootnote > 11){
+		if(rootnote < 0){
 		    System.out.println(args[2] + " is not a valid root note"); printUsageAndExit();
 		}
 	    }	
@@ -105,6 +106,10 @@ public class ModMIDITuning {
 		    System.out.println(args[4] + " is not a valid number of semitones.");
 		    printUsageAndExit();
 		}
+		if((!(maxpitchbend > 0))||(maxpitchbend > 127)){
+		    System.out.println(args[4] + " is not a valid number of semitones.");
+		    printUsageAndExit();
+		}
 	    }
 	    Boolean writemaxpitchbend = true;
 	    if(args.length > 5){
@@ -113,7 +118,6 @@ public class ModMIDITuning {
 		    writemaxpitchbend = false;
 		}
 	    }
-
 	    makethefile(args[0],args[1],rootnote,temperamentstring, maxpitchbend,writemaxpitchbend);
 	}  // end of command line mode code	
     }
@@ -384,7 +388,7 @@ public class ModMIDITuning {
 	// infile is the midi file to read in, outfile is the path for the modified file to be saved, rootnote is the note to base the tuning scheme on, temperamentstring is a string that tells what tuning scheme to use, maxpitchbend is the number of semitones the target midi synth can bend a note
 
 	// write a string saying what's happening here
-	System.out.println(infile+"   "+outfile+"   "+rootnote+"   "+temperamentstring+"   "+maxpitchbend);
+	System.out.println(infile+"   "+outfile+"   "+rootnote+"   "+temperamentstring+"   "+maxpitchbend+"   "+writemaxpitchbend);
 
 	int pitchshift[] = {0,0,0,0,0,0,0,0,0,0,0,0};
 
